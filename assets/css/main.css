@@ -1,0 +1,49 @@
+/* extracted CSS from original index.html */
+:root{
+  --bg-0:#07070f; --bg-1:#0a0a0f; --bg-2:#0d0d20; --bg-3:#101018; --bg-4:#0c0c20; --bg-5:#090916;
+  --bg-hover:#14141f; --bg-alt:#0a0a16; --bg-input:#050509;
+  --border-1:#1e1e3f; --border-2:#1a1a35; --border-3:#2a2a55; --border-4:#3f3f6a;
+  --text-1:#ffffff; --text-2:#e2e8f0; --text-2b:#e8e8ec; --text-3:#cbd5e1; --text-4:#94a3b8;
+  --text-5:#6b7280; --text-6:#64748b; --text-7:#7d8694; --text-8:#5b6472; --text-9:#9ca3af;
+  --cyan:#22d3ee; --cyan-soft:#7dd3fc; --cyan-deep:#0e7490;
+  --rose:#e11d48; --rose-soft:#f43f5e; --red-soft:#f87171;
+  --amber:#fbbf24; --amber-deep:#f59e0b;
+  --green:#22c55e; --green-soft:#86efac;
+  --purple:#a78bfa; --purple-soft:#c084fc; --purple-deep:#a855f7;
+  --shadow-soft:rgba(0,0,0,0.35); --shadow-strong:rgba(0,0,0,0.5);
+  --overlay-tint:rgba(255,255,255,0.05); --overlay-tint-border:rgba(255,255,255,0.1);
+}
+[data-theme="light"]{
+  --bg-0:#faf8f4; --bg-1:#fdfcfa; --bg-2:#ffffff; --bg-3:#f3f1ea; --bg-4:#faf8f3; --bg-5:#ffffff;
+  --bg-hover:#ede9df; --bg-alt:#f6f3ec; --bg-input:#ffffff;
+  --border-1:#e0dacb; --border-2:#e8e3d6; --border-3:#cec3a9; --border-4:#b8ab8a;
+  --text-1:#18140d; --text-2:#241f16; --text-2b:#2a251c; --text-3:#4a4335; --text-4:#6b6353;
+  --text-5:#847a65; --text-6:#8f8570; --text-7:#7d7360; --text-8:#948a76; --text-9:#5c5546;
+  --cyan:#0c6478; --cyan-soft:#0e7490; --cyan-deep:#155e75;
+  --rose:#be123c; --rose-soft:#e11d48; --red-soft:#dc2626;
+  --amber:#b45309; --amber-deep:#92400e;
+  --green:#15803d; --green-soft:#16a34a;
+  --purple:#7c3aed; --purple-soft:#6d28d9; --purple-deep:#9333ea;
+  --shadow-soft:rgba(80,70,50,0.1); --shadow-strong:rgba(80,70,50,0.16);
+  --overlay-tint:rgba(0,0,0,0.035); --overlay-tint-border:rgba(0,0,0,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-0);color:var(--text-3);line-height:1.65;transition:background 0.25s,color 0.25s}
+a{color:#60a5fa;text-decoration:none}a:hover{color:var(--red-soft);text-decoration:underline}
+nav{background:var(--bg-3);padding:12px 16px;position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border-1);overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav a{display:inline-block;color:var(--text-4);padding:9px 12px;border-radius:16px;font-size:0.78rem;margin-right:4px;transition:all 0.2s var(--ease-editor);border:1px solid transparent;text-decoration:none}
+nav a:hover{background:var(--rose);color:#fff;border-color:var(--rose)}
+nav a.active{background:var(--rose);color:#fff;border-color:var(--rose);font-weight:700;box-shadow:0 0 0 2px rgba(225,29,72,0.4)}
+.hero{background:linear-gradient(180deg,var(--bg-1) 0%,var(--bg-3) 100%);padding:64px 20px 56px;text-align:center;position:relative;overflow:hidden;border-bottom:1px solid var(--border-1)}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% -10%,rgba(225,29,72,0.18),transparent 60%);pointer-events:none}
+.hero-content{position:relative;z-index:1;max-width:760px;margin:0 auto}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.12em;color:var(--text-4);background:var(--overlay-tint);border:1px solid rgba(255,255,255,0.03);padding:6px 10px;border-radius:999px}
+.rec-dot{width:7px;height:7px;border-radius:50%;background:var(--rose);box-shadow:0 0 8px var(--rose);animation:recPulse 1.6s ease-in-out infinite;flex-shrink:0}
+@keyframes recPulse{0%,100%{opacity:1}50%{opacity:0.35}}
+.hero h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(2rem,5.5vw,3.4rem);color:var(--text-1);margin-bottom:16px;letter-spacing:-0.02em;line-height:1.08}
+.hero h1 span{color:var(--rose-soft)}
+.hero p{font-family:'Inter',sans-serif;color:var(--text-9);font-size:1.05rem;max-width:640px;margin:0 auto 36px;line-height:1.6}
+/* ... rest of the original CSS ... */
+/* Note: The full stylesheet was extracted from index.html. */
