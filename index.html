@@ -5070,5 +5070,35 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
   });
 }
 </script>
+
+<style>
+/* -- Phase tools row: consolidates My Notes + Quick Quiz into one compact row instead of two stacked blocks -- */
+.phase-tools-row{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-top:16px}
+.phase-tools-row .notes-details{flex:1 1 260px;min-width:0;margin-top:0}
+.phase-tools-row .quiz-trigger-wrap{flex:0 0 auto;text-align:left;margin-top:0;padding-top:2px}
+@media(max-width:600px){
+  .phase-tools-row{flex-direction:column}
+  .phase-tools-row .quiz-trigger-wrap{text-align:center}
+}
+</style>
+<script>
+// ---- Phase tools row: merge My Notes + Quick Quiz into a single row where both exist on a phase ----
+// (Pure DOM re-arrangement -- runs after both features have already built their elements, doesn't touch their logic)
+(function(){
+  document.querySelectorAll('.phase-body').forEach(function(body){
+    var notes = null, quiz = null;
+    Array.prototype.forEach.call(body.children, function(child){
+      if (child.classList.contains('notes-details')) notes = child;
+      if (child.classList.contains('quiz-trigger-wrap')) quiz = child;
+    });
+    if (!notes || !quiz) return;
+    var row = document.createElement('div');
+    row.className = 'phase-tools-row';
+    notes.parentNode.insertBefore(row, notes);
+    row.appendChild(notes);
+    row.appendChild(quiz);
+  });
+})();
+</script>
 </body>
 </html>
