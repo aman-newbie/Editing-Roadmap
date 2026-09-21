@@ -3053,12 +3053,13 @@ html[data-lang="en"] .hi-text{display:none}
           usable.forEach(function(m){
             corrected = corrected.slice(0, m.offset) + m.replacements[0].value + corrected.slice(m.offset + m.length);
           });
-          if (sourceLang === 'en') {
+          var targetLang = langSelect.value;
+          if (targetLang === 'en') {
             setStatus('Grammar check ho gaya ✓', 'Grammar check done ✓', 'done');
             showTranslatePreview(corrected, function(){ textarea.value = corrected; persist(); });
           } else {
-            setStatus('Wapas translate ho raha hai…', 'Translating back…', 'translating-back');
-            return translateText(corrected, sourceLang, 'en').then(function(backRes){
+            setStatus('Translate ho raha hai…', 'Translating…', 'translating-back');
+            return translateText(corrected, targetLang, 'en').then(function(backRes){
               setStatus('Grammar check ho gaya ✓', 'Grammar check done ✓', 'done');
               showTranslatePreview(backRes.translated, function(){ textarea.value = backRes.translated; persist(); });
             });
