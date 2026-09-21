@@ -2924,26 +2924,20 @@ html[data-lang="en"] .hi-text{display:none}
     var organizeBtn = document.createElement('button');
     organizeBtn.type = 'button';
     organizeBtn.className = 'notes-organize-btn';
-    organizeBtn.innerHTML = '🪄 <span class="hi-text">Organize aur Grammar Check karo</span><span class="en-text">Organize &amp; Check Grammar</span>';
-    var translateBtn = document.createElement('button');
-    translateBtn.type = 'button';
-    translateBtn.className = 'notes-translate-btn';
-    translateBtn.innerHTML = '🌐 <span class="hi-text">Translate</span><span class="en-text">Translate</span>';
+    organizeBtn.innerHTML = '🪄 <span class="hi-text">Organize karo</span><span class="en-text">Organize</span>';
     var suggestions = document.createElement('div');
     suggestions.className = 'notes-suggestions';
     suggestions.hidden = true;
     toolbar.appendChild(organizeBtn);
-    toolbar.appendChild(translateBtn);
 
     var privacyHint = document.createElement('div');
     privacyHint.className = 'notes-privacy-hint';
-    privacyHint.innerHTML = '<span class="hi-text">🔒 "Organize" local hai, kahin nahi jaata. "Translate" aur "Grammar Check" tumhara note text ek online service (Google/LanguageTool) ko bhejte hain.</span><span class="en-text">🔒 "Organize" is local and never leaves this device. "Translate" and "Grammar Check" send your note text to an online service (Google/LanguageTool).</span>';
+    privacyHint.innerHTML = '<span class="hi-text">🔒 "Organize" local hai, kahin nahi jaata (isme grammar check bhi shamil hai). Neeche wale dono "Translate" options tumhara note text ek online service (Google/LanguageTool) ko bhejte hain.</span><span class="en-text">🔒 "Organize" is local and never leaves this device (grammar check is included in it). Both "Translate" options below send your note text to an online service (Google/LanguageTool).</span>';
     toolbar.appendChild(privacyHint);
 
-    // ---- Translate panel: pick a language, then either "Translate Only" or "Translate + Grammar Check" ----
+    // ---- Translate section: always visible — 3 clearly separate, equally-visible actions total (Organize above, these 2 below) ----
     var translatePanel = document.createElement('div');
     translatePanel.className = 'notes-translate-panel';
-    translatePanel.hidden = true;
 
     var tRow = document.createElement('div');
     tRow.className = 'notes-translate-row';
@@ -2959,11 +2953,11 @@ html[data-lang="en"] .hi-text{display:none}
 
     var translateOnlyBtn = document.createElement('button');
     translateOnlyBtn.type = 'button';
-    translateOnlyBtn.innerHTML = '<span class="hi-text">Sirf Translate karo</span><span class="en-text">Translate Only</span>';
+    translateOnlyBtn.innerHTML = '🌐 <span class="hi-text">Translate karo</span><span class="en-text">Translate</span>';
     var translateGrammarBtn = document.createElement('button');
     translateGrammarBtn.type = 'button';
     translateGrammarBtn.className = 'primary';
-    translateGrammarBtn.innerHTML = '<span class="hi-text">Translate + Grammar Check</span><span class="en-text">Translate + Grammar Check</span>';
+    translateGrammarBtn.innerHTML = '🌐🪄 <span class="hi-text">Translate + Organize karo</span><span class="en-text">Translate + Organize</span>';
 
     tRow.appendChild(langSelect);
     tRow.appendChild(translateOnlyBtn);
@@ -2974,10 +2968,6 @@ html[data-lang="en"] .hi-text{display:none}
     translatePreview.className = 'notes-translate-preview';
     translatePreview.hidden = true;
     translatePanel.appendChild(translatePreview);
-
-    translateBtn.addEventListener('click', function(){
-      translatePanel.hidden = !translatePanel.hidden;
-    });
 
     langSelect.addEventListener('change', function(){
       try { localStorage.setItem(LAST_LANG_KEY, langSelect.value); } catch(e){}
