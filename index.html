@@ -422,6 +422,7 @@ html[data-lang="en"] .hi-text{display:none}
 .notes-status{font-size:0.68rem;color:var(--text-6);margin-top:6px;height:14px}
 .notes-toolbar{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px}
 .notes-privacy-hint{font-size:0.68rem;color:var(--text-6);margin-top:6px;line-height:1.4}
+.notes-translate-hint{font-size:0.68rem;color:var(--text-6);margin-top:8px;line-height:1.4}
 .notes-organize-btn{background:var(--bg-input);border:1px solid var(--border-1);color:var(--cyan-soft);font-family:'Inter',sans-serif;font-size:0.76rem;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all 0.2s var(--ease-editor)}
 .notes-organize-btn:hover{border-color:var(--cyan);color:var(--cyan)}
 .notes-organize-btn:disabled{opacity:0.5;cursor:default}
@@ -2964,6 +2965,11 @@ html[data-lang="en"] .hi-text{display:none}
     tRow.appendChild(translateGrammarBtn);
     translatePanel.appendChild(tRow);
 
+    var translateHint = document.createElement('div');
+    translateHint.className = 'notes-translate-hint';
+    translateHint.innerHTML = '<span class="hi-text">Dropdown wali language sirf “Translate” ke liye hai. “Translate + Organize” hamesha tumhari note ki original language mein hi wapas aata hai (grammar-check ke liye sirf beech mein English use hota hai).</span><span class="en-text">The dropdown language is only for plain “Translate”. “Translate + Organize” always comes back in your note’s original language (English is only used internally for the grammar check).</span>';
+    translatePanel.appendChild(translateHint);
+
     var translatePreview = document.createElement('div');
     translatePreview.className = 'notes-translate-preview';
     translatePreview.hidden = true;
@@ -3053,13 +3059,12 @@ html[data-lang="en"] .hi-text{display:none}
           usable.forEach(function(m){
             corrected = corrected.slice(0, m.offset) + m.replacements[0].value + corrected.slice(m.offset + m.length);
           });
-          var targetLang = langSelect.value;
-          if (targetLang === 'en') {
+          if (sourceLang === 'en') {
             setStatus('Grammar check ho gaya ✓', 'Grammar check done ✓', 'done');
             showTranslatePreview(corrected, function(){ textarea.value = corrected; persist(); });
           } else {
-            setStatus('Translate ho raha hai…', 'Translating…', 'translating-back');
-            return translateText(corrected, targetLang, 'en').then(function(backRes){
+            setStatus('Wapas translate ho raha hai…', 'Translating back…', 'translating-back');
+            return translateText(corrected, sourceLang, 'en').then(function(backRes){
               setStatus('Grammar check ho gaya ✓', 'Grammar check done ✓', 'done');
               showTranslatePreview(backRes.translated, function(){ textarea.value = backRes.translated; persist(); });
             });
