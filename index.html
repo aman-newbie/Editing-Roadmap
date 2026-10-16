@@ -2853,14 +2853,72 @@ html[data-lang="en"] .hi-text{display:none}
 
   // Local, deterministic, always-safe cleanup - no network needed, never breaks note-taking flow
   function organizeText(text){
+    var isUrlish = function(tok){ return /:\/\/|^www\.|\w\.[a-z]{2,}\/|\?\w+=|@/i.test(tok); };
     var t = (text || '').replace(/\r\n/g, '\n');
+
+    // 1) Per-line whitespace cleanup
     t = t.split('\n').map(function(line){
       return line.replace(/[ \t]+/g, ' ').replace(/^\s+|\s+$/g, '');
     }).join('\n');
     t = t.replace(/\n{3,}/g, '\n\n');
+
+    // 2) Punctuation spacing, applied per word so links, decimals, times (16:9, 10:30) and 1,000 stay intact
+    t = t.split('\n').map(function(line){
+      return line.split(' ').map(function(tok){
+        if (isUrlish(tok)) return tok;
+        tok = tok.replace(/([,;!?:])(?=[A-Za-z\u0900-\u097F])/g, '$1 ');
+        tok = tok.replace(/([a-z\u0900-\u097F)\]])\.(?=[A-Z])/g, '$1. ');
+        return tok;
+      }).join(' ');
+    }).join('\n');
     t = t.replace(/ +([,.!?;:])/g, '$1');
-    t = t.replace(/([,.!?;:])(?=[^\s\n])/g, '$1 ');
-    t = t.replace(/(^|\n|[.!?]\s+)([a-z])/g, function(m, pre, ch){ return pre + ch.toUpperCase(); });
+
+    // 3) Capitalize sentence starts (but never touch links)
+    t = t.replace(/(^|\n|[.!?\u0964]\s+)([a-z])/g, function(m, pre, ch, off, str){
+      var rest = str.slice(off + pre.length);
+      if (/^(?:https?:\/\/|www\.)/i.test(rest)) return m;
+      return pre + ch.toUpperCase();
+    });
+
+    // 4) Normalize existing list-like lines (-, *, bullet, "1.", "2)") into one bullet marker
+    var cap = function(s){
+      return /^(?:https?:\/\/|www\.)/i.test(s) ? s : s.charAt(0).toUpperCase() + s.slice(1);
+    };
+    t = t.split('\n').map(function(line){
+      var m = line.match(/^\s*(?:[-*\u2022]|\d+[.)])\s+(.+)$/);
+      return m ? '\u2022 ' + cap(m[1]) : line;
+    }).join('\n');
+
+    // 5) Structure: turn "First... Then... Finally..." style sentences into bullets, split long blobs into paragraphs
+    var CUES_LATIN = /^(?:first|second|third|fourth|fifth|next|then|also|finally|lastly|additionally|moreover|furthermore|pehle|phir|fir|uske baad|iske baad|aur phir|ant mein|akhir mein|sabse pehle)\b/i;
+    var CUES_DEV = /^(?:सबसे पहले|पहले|फिर|उसके बाद|इसके बाद|अंत में|आखिर में|दूसरा|तीसरा|साथ ही|इसके अलावा)(?=\s|,|$)/;
+    var isCue = function(s){ return CUES_LATIN.test(s) || CUES_DEV.test(s); };
+    var compact = function(s){ return s.replace(/\s+/g, ''); };
+    var SPLIT = /[^.!?\u0964\n]+[.!?\u0964]+(?:\s+|$)|[^.!?\u0964\n]+$/g;
+
+    t = t.split(/\n\n+/).map(function(para){
+      var lines = para.split('\n');
+      if (lines.length > 1) return para;                 // already structured line by line - leave it alone
+      if (lines[0].indexOf('\u2022') === 0) return para;
+      var sentences = para.match(SPLIT);
+      if (!sentences) return para;
+      sentences = sentences.map(function(s){ return s.trim(); }).filter(Boolean);
+      if (compact(sentences.join('')) !== compact(para)) return para;   // safety: never risk dropping any text
+      if (sentences.length < 3) return para;
+      var cueCount = sentences.filter(isCue).length;
+      if (cueCount >= 2) {
+        var intro = isCue(sentences[0]) ? null : sentences[0];
+        var items = intro ? sentences.slice(1) : sentences;
+        return (intro ? intro + '\n' : '') + items.map(function(s){ return '\u2022 ' + s; }).join('\n');
+      }
+      if (sentences.length >= 5) {
+        var chunks = [];
+        for (var i = 0; i < sentences.length; i += 3) chunks.push(sentences.slice(i, i + 3).join(' '));
+        return chunks.join('\n\n');
+      }
+      return para;
+    }).join('\n\n');
+
     return t.trim();
   }
 
@@ -2933,7 +2991,7 @@ html[data-lang="en"] .hi-text{display:none}
 
     var privacyHint = document.createElement('div');
     privacyHint.className = 'notes-privacy-hint';
-    privacyHint.innerHTML = '<span class="hi-text">🔒 "Organize" local hai, kahin nahi jaata (isme grammar check bhi shamil hai). Neeche wale dono "Translate" options tumhara note text ek online service (Google/LanguageTool) ko bhejte hain.</span><span class="en-text">🔒 "Organize" is local and never leaves this device (grammar check is included in it). Both "Translate" options below send your note text to an online service (Google/LanguageTool).</span>';
+    privacyHint.innerHTML = '<span class="hi-text">🔒 <strong>Organize</strong>: spacing/punctuation theek karta hai, lists aur "Pehle… Phir… Ant mein…" jaise steps ko bullets mein badalta hai, lambe text ko paragraphs mein todta hai — phir grammar suggestions ke liye text LanguageTool (online) ko bhejta hai. "Translate" text Google Translate ko bhejta hai; "Translate + Organize" dono services use karta hai.</span><span class="en-text">🔒 <strong>Organize</strong> tidies spacing and punctuation, turns lists and "First… Then… Finally…" steps into bullets, and splits long text into paragraphs — then sends the text to LanguageTool (online) for grammar suggestions. "Translate" sends text to Google Translate; "Translate + Organize" uses both services.</span>';
     toolbar.appendChild(privacyHint);
 
     // ---- Translate section: always visible — 3 clearly separate, equally-visible actions total (Organize above, these 2 below) ----
@@ -3059,6 +3117,7 @@ html[data-lang="en"] .hi-text{display:none}
           usable.forEach(function(m){
             corrected = corrected.slice(0, m.offset) + m.replacements[0].value + corrected.slice(m.offset + m.length);
           });
+          corrected = organizeText(corrected);
           if (sourceLang === 'en') {
             setStatus('Grammar check ho gaya ✓', 'Grammar check done ✓', 'done');
             showTranslatePreview(corrected, function(){ textarea.value = corrected; persist(); });
