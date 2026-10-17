@@ -422,7 +422,13 @@ html[data-lang="en"] .hi-text{display:none}
 .notes-status{font-size:0.68rem;color:var(--text-6);margin-top:6px;height:14px}
 .notes-toolbar{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px}
 .notes-privacy-hint{font-size:0.68rem;color:var(--text-6);margin-top:6px;line-height:1.4}
-.notes-translate-hint{font-size:0.68rem;color:var(--text-6);margin-top:8px;line-height:1.4}
+.notes-actions{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.notes-action{border:1px solid var(--border-1);border-radius:8px;background:var(--bg-input);padding:10px 12px}
+.notes-action-title{font-size:0.8rem;font-weight:700;color:var(--text-2);margin-bottom:2px}
+.notes-action-help{font-size:0.72rem;color:var(--text-4);line-height:1.45;margin-bottom:8px}
+.notes-action-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.notes-action-label{font-size:0.72rem;color:var(--text-4);white-space:nowrap}
+.notes-preview-caption{font-size:0.68rem;color:var(--text-4);margin-bottom:6px;white-space:normal}
 .notes-organize-btn{background:var(--bg-input);border:1px solid var(--border-1);color:var(--cyan-soft);font-family:'Inter',sans-serif;font-size:0.76rem;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all 0.2s var(--ease-editor)}
 .notes-organize-btn:hover{border-color:var(--cyan);color:var(--cyan)}
 .notes-organize-btn:disabled{opacity:0.5;cursor:default}
@@ -2978,28 +2984,31 @@ html[data-lang="en"] .hi-text{display:none}
       lastStatusKind = kind || null;
     }
 
-    var toolbar = document.createElement('div');
-    toolbar.className = 'notes-toolbar';
+    // ---- Three simple actions, each in its own labelled card so it is obvious what every button does ----
+    function notesMk(tag, cls, html){
+      var n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (html != null) n.innerHTML = html;
+      return n;
+    }
+    function notesCard(titleHtml, helpHtml, controls){
+      var card = notesMk('div', 'notes-action');
+      card.appendChild(notesMk('div', 'notes-action-title', titleHtml));
+      card.appendChild(notesMk('div', 'notes-action-help', helpHtml));
+      card.appendChild(controls);
+      return card;
+    }
+
+    var toolbar = notesMk('div', 'notes-actions');
+
     var organizeBtn = document.createElement('button');
     organizeBtn.type = 'button';
     organizeBtn.className = 'notes-organize-btn';
-    organizeBtn.innerHTML = '🪄 <span class="hi-text">Organize karo</span><span class="en-text">Organize</span>';
+    organizeBtn.innerHTML = '<span class="hi-text">Organize karo</span><span class="en-text">Organize</span>';
     var suggestions = document.createElement('div');
     suggestions.className = 'notes-suggestions';
     suggestions.hidden = true;
-    toolbar.appendChild(organizeBtn);
 
-    var privacyHint = document.createElement('div');
-    privacyHint.className = 'notes-privacy-hint';
-    privacyHint.innerHTML = '<span class="hi-text">🔒 <strong>Organize</strong>: spacing/punctuation theek karta hai, lists aur "Pehle… Phir… Ant mein…" jaise steps ko bullets mein badalta hai, lambe text ko paragraphs mein todta hai — phir grammar suggestions ke liye text LanguageTool (online) ko bhejta hai. "Translate" text Google Translate ko bhejta hai; "Translate + Organize" dono services use karta hai.</span><span class="en-text">🔒 <strong>Organize</strong> tidies spacing and punctuation, turns lists and "First… Then… Finally…" steps into bullets, and splits long text into paragraphs — then sends the text to LanguageTool (online) for grammar suggestions. "Translate" sends text to Google Translate; "Translate + Organize" uses both services.</span>';
-    toolbar.appendChild(privacyHint);
-
-    // ---- Translate section: always visible — 3 clearly separate, equally-visible actions total (Organize above, these 2 below) ----
-    var translatePanel = document.createElement('div');
-    translatePanel.className = 'notes-translate-panel';
-
-    var tRow = document.createElement('div');
-    tRow.className = 'notes-translate-row';
     var langSelect = document.createElement('select');
     langSelect.setAttribute('aria-label', 'Target language');
     TRANSLATE_LANGUAGES.forEach(function(pair){
@@ -3012,21 +3021,42 @@ html[data-lang="en"] .hi-text{display:none}
 
     var translateOnlyBtn = document.createElement('button');
     translateOnlyBtn.type = 'button';
-    translateOnlyBtn.innerHTML = '🌐 <span class="hi-text">Translate karo</span><span class="en-text">Translate</span>';
+    translateOnlyBtn.innerHTML = '<span class="hi-text">Translate karo</span><span class="en-text">Translate</span>';
     var translateGrammarBtn = document.createElement('button');
     translateGrammarBtn.type = 'button';
     translateGrammarBtn.className = 'primary';
-    translateGrammarBtn.innerHTML = '🌐🪄 <span class="hi-text">Translate + Organize karo</span><span class="en-text">Translate + Organize</span>';
+    translateGrammarBtn.innerHTML = '<span class="hi-text">Translate + Organize karo</span><span class="en-text">Translate + Organize</span>';
 
-    tRow.appendChild(langSelect);
-    tRow.appendChild(translateOnlyBtn);
-    tRow.appendChild(translateGrammarBtn);
-    translatePanel.appendChild(tRow);
+    var organizeRow = notesMk('div', 'notes-action-controls');
+    organizeRow.appendChild(organizeBtn);
 
-    var translateHint = document.createElement('div');
-    translateHint.className = 'notes-translate-hint';
-    translateHint.innerHTML = '<span class="hi-text">Dropdown wali language sirf “Translate” ke liye hai. “Translate + Organize” hamesha tumhari note ki original language mein hi wapas aata hai (grammar-check ke liye sirf beech mein English use hota hai).</span><span class="en-text">The dropdown language is only for plain “Translate”. “Translate + Organize” always comes back in your note’s original language (English is only used internally for the grammar check).</span>';
-    translatePanel.appendChild(translateHint);
+    var translateRow = notesMk('div', 'notes-translate-row');
+    translateRow.appendChild(notesMk('span', 'notes-action-label', '<span class="hi-text">Kis language mein:</span><span class="en-text">Translate to:</span>'));
+    translateRow.appendChild(langSelect);
+    translateRow.appendChild(translateOnlyBtn);
+
+    var comboRow = notesMk('div', 'notes-translate-row');
+    comboRow.appendChild(translateGrammarBtn);
+
+    toolbar.appendChild(notesCard(
+      '🪄 <span class="hi-text">Organize karo</span><span class="en-text">Organize</span>',
+      '<span class="hi-text">Note ko saaf karta hai: spacing theek, bullets aur paragraphs banata hai, aur English grammar check karta hai.</span><span class="en-text">Tidies your note: fixes spacing, makes bullets and paragraphs, and checks English grammar.</span>',
+      organizeRow));
+    toolbar.appendChild(notesCard(
+      '🌐 <span class="hi-text">Translate karo</span><span class="en-text">Translate</span>',
+      '<span class="hi-text">Note ko tumhari chuni hui language mein badalta hai.</span><span class="en-text">Converts your note into the language you pick.</span>',
+      translateRow));
+    toolbar.appendChild(notesCard(
+      '🌐🪄 <span class="hi-text">Translate + Organize</span><span class="en-text">Translate + Organize</span>',
+      '<span class="hi-text">Hinglish/Hindi notes ke liye: grammar theek karke bullets lagata hai, phir note wapas tumhari hi language mein deta hai.</span><span class="en-text">For Hinglish/Hindi notes: fixes grammar and adds bullets, then gives the note back in your own language.</span>',
+      comboRow));
+
+    var privacyHint = document.createElement('div');
+    privacyHint.className = 'notes-privacy-hint';
+    privacyHint.innerHTML = '<span class="hi-text">🔒 Saaf-safai tumhare device pe hoti hai. Grammar check text LanguageTool ko aur translate Google Translate ko bhejta hai (dono online).</span><span class="en-text">🔒 Tidying happens on your device. Grammar check sends your text to LanguageTool and translating sends it to Google Translate (both online).</span>';
+
+    // Holds only the preview now (the three action cards above replaced the old shared panel)
+    var translatePanel = document.createElement('div');
 
     var translatePreview = document.createElement('div');
     translatePreview.className = 'notes-translate-preview';
@@ -3063,8 +3093,13 @@ html[data-lang="en"] .hi-text{display:none}
       });
       actions.appendChild(applyBtn);
       actions.appendChild(cancelBtn);
+      var cap = document.createElement('div');
+      cap.className = 'notes-preview-caption';
+      cap.innerHTML = '<span class="hi-text">Preview — jab tak “Note replace karo” nahi dabate, kuch nahi badlega.</span><span class="en-text">Preview — nothing changes until you press “Replace note”.</span>';
+      translatePreview.appendChild(cap);
       translatePreview.appendChild(textDiv);
       translatePreview.appendChild(actions);
+      try { translatePreview.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(e){}
     }
 
     translateOnlyBtn.addEventListener('click', function(){
@@ -3186,6 +3221,7 @@ html[data-lang="en"] .hi-text{display:none}
       actions.appendChild(applyBtn);
       actions.appendChild(dismissBtn);
       suggestions.appendChild(actions);
+      try { suggestions.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(e){}
 
       applyBtn.addEventListener('click', function(){
         var usable = matches.filter(function(m){
@@ -3211,6 +3247,7 @@ html[data-lang="en"] .hi-text{display:none}
     }
 
     organizeBtn.addEventListener('click', function(){
+      clearTimeout(saveTimer); // a pending autosave must not overwrite the Organize status message
       // Step 1: instant local cleanup - always works, no network needed
       var cleaned = organizeText(textarea.value);
       textarea.value = cleaned;
@@ -3259,10 +3296,11 @@ html[data-lang="en"] .hi-text{display:none}
 
     if (textarea.value) { details.open = false; summary.innerHTML = '📝 <span class="hi-text">Mere Notes (saved)</span><span class="en-text">My Notes (saved)</span>'; }
     wrap.appendChild(textarea);
+    wrap.appendChild(status);
     wrap.appendChild(toolbar);
     wrap.appendChild(translatePanel);
     wrap.appendChild(suggestions);
-    wrap.appendChild(status);
+    wrap.appendChild(privacyHint);
     details.appendChild(summary);
     details.appendChild(wrap);
     body.appendChild(details);
