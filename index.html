@@ -2999,6 +2999,13 @@ html[data-lang="en"] .hi-text{display:none}
       return card;
     }
 
+    // LanguageTool "spelling" matches are unsafe to auto-apply: they mangle Roman-Hindi words and names like Kuleshov
+    function isSpellingMatch(m){
+      var r = m && m.rule;
+      if (!r) return false;
+      return r.issueType === 'misspelling' || !!(r.category && r.category.id === 'TYPOS');
+    }
+
     var toolbar = notesMk('div', 'notes-actions');
 
     var organizeBtn = document.createElement('button');
@@ -3146,7 +3153,7 @@ html[data-lang="en"] .hi-text{display:none}
           var corrected = toEnglish.translated;
           var usable = matches.filter(function(m){
             return m.replacements && m.replacements[0] && m.replacements[0].value != null &&
-                   typeof m.offset === 'number' && typeof m.length === 'number';
+                   typeof m.offset === 'number' && typeof m.length === 'number' && !isSpellingMatch(m);
           });
           usable.sort(function(a, b){ return b.offset - a.offset; });
           usable.forEach(function(m){
@@ -3199,14 +3206,14 @@ html[data-lang="en"] .hi-text{display:none}
       suggestions.hidden = false;
       var hint = document.createElement('div');
       hint.className = 'notes-suggestions-hint';
-      hint.innerHTML = '<span class="hi-text">Yeh sirf English samajhta hai — Hindi/Roman-Hindi words galti se "unknown" dikh sakte hain, unhe ignore kar do.</span><span class="en-text">This only understands English — Hindi/Roman-Hindi words may show up as "unknown" by mistake, feel free to ignore those.</span>';
+      hint.innerHTML = '<span class="hi-text">Yeh sirf English samajhta hai. "(spelling)" wale suggestions kabhi apne-aap apply nahi hote — Hindi/Roman-Hindi words aur naam (jaise Kuleshov) galti se flag ho jaate hain.</span><span class="en-text">This only understands English. "(spelling)" suggestions are never applied automatically — Hindi/Roman-Hindi words and names (like Kuleshov) get flagged by mistake.</span>';
       suggestions.appendChild(hint);
       var list = document.createElement('ul');
       matches.slice(0, 20).forEach(function(m){
         var li = document.createElement('li');
         var msg = m.message || 'Suggestion';
         var repl = (m.replacements && m.replacements[0] && m.replacements[0].value) || '';
-        li.textContent = repl ? (msg + ' → "' + repl + '"') : msg;
+        li.textContent = (isSpellingMatch(m) ? '(spelling) ' : '') + (repl ? (msg + ' → "' + repl + '"') : msg);
         list.appendChild(li);
       });
       suggestions.appendChild(list);
@@ -3214,11 +3221,15 @@ html[data-lang="en"] .hi-text{display:none}
       actions.className = 'notes-suggestions-actions';
       var applyBtn = document.createElement('button');
       applyBtn.type = 'button';
-      applyBtn.innerHTML = '<span class="hi-text">Sab fixes apply karo</span><span class="en-text">Apply all fixes</span>';
+      applyBtn.innerHTML = '<span class="hi-text">Grammar fixes apply karo</span><span class="en-text">Apply grammar fixes</span>';
       var dismissBtn = document.createElement('button');
       dismissBtn.type = 'button';
       dismissBtn.innerHTML = '<span class="hi-text">Rehne do</span><span class="en-text">Dismiss</span>';
-      actions.appendChild(applyBtn);
+      var hasFixable = matches.some(function(m){
+        return m.replacements && m.replacements[0] && m.replacements[0].value != null &&
+               typeof m.offset === 'number' && typeof m.length === 'number' && !isSpellingMatch(m);
+      });
+      if (hasFixable) actions.appendChild(applyBtn);
       actions.appendChild(dismissBtn);
       suggestions.appendChild(actions);
       try { suggestions.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(e){}
@@ -3226,7 +3237,7 @@ html[data-lang="en"] .hi-text{display:none}
       applyBtn.addEventListener('click', function(){
         var usable = matches.filter(function(m){
           return m.replacements && m.replacements[0] && m.replacements[0].value != null &&
-                 typeof m.offset === 'number' && typeof m.length === 'number';
+                 typeof m.offset === 'number' && typeof m.length === 'number' && !isSpellingMatch(m);
         });
         // Apply back-to-front by offset so earlier offsets don't shift after each replacement
         usable.sort(function(a, b){ return b.offset - a.offset; });
