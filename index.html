@@ -417,6 +417,14 @@ html[data-lang="en"] .hi-text{display:none}
 .notes-details summary::before{content:"▸";display:inline-block;transition:transform 0.2s var(--ease-editor);color:var(--text-6);font-size:0.7rem}
 .notes-details[open] summary::before{transform:rotate(90deg)}
 .notes-details .notes-body{padding:0 14px 14px}
+.notes-tabs{display:flex;gap:6px;margin:10px 0}
+.notes-tab{font-family:'Inter',sans-serif;font-size:0.76rem;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;border:1px solid var(--border-1);background:transparent;color:var(--text-4)}
+.notes-tab[aria-selected="true"]{color:var(--cyan-soft);border-color:var(--cyan-soft)}
+.notes-premade-note{font-size:0.7rem;color:var(--text-6);margin-bottom:8px;font-style:italic}
+.premade-card{border:1px solid var(--border-1);border-radius:6px;background:var(--bg-input);padding:10px 12px;margin-bottom:10px}
+.premade-title{font-size:0.82rem;font-weight:700;color:var(--cyan-soft)}
+.premade-text{white-space:pre-wrap;font-size:0.8rem;color:var(--text-3);line-height:1.55;margin:6px 0 8px}
+.premade-copy{font-family:'Inter',sans-serif;font-size:0.76rem;font-weight:600;padding:5px 12px;border-radius:6px;cursor:pointer;border:1px solid var(--cyan-soft);background:transparent;color:var(--cyan-soft)}
 .notes-textarea{width:100%;min-height:90px;background:var(--bg-input);border:1px solid var(--border-1);border-radius:6px;color:var(--text-2);font-family:'Inter',sans-serif;font-size:0.82rem;padding:10px 12px;resize:vertical;line-height:1.5}
 .notes-textarea:focus{outline:none;border-color:var(--cyan)}
 .notes-status{font-size:0.68rem;color:var(--text-6);margin-top:6px;height:14px}
@@ -2956,6 +2964,8 @@ html[data-lang="en"] .hi-text{display:none}
     });
   }
 
+  var PREMADE_NOTES = {"p1": [["⚡ Quick summary", "• Editing ka matlab sirf clips kaatna nahi — shots ko aise jodna ki meaning aur emotion bane.\n• Kuleshov effect: same chehra, alag shot ke saath alag emotion deta hai. Shots ka order meaning badal deta hai.\n• Cut tab lagao jab uski wajah ho: nayi info, emotion badalna, ya action continue karna.\n• Continuity: agle-pichle shot mein direction, position aur light match hone chahiye.\n• Pehle theory, phir software. Tool seekhne se pehle samjho ki cut kyun lag raha hai."], ["📖 Mini glossary", "• Cut — ek shot se doosre shot pe seedha jump.\n• Continuity — shots ke beech cheezein match rehna (position, light, direction).\n• Montage — chhote shots jod kar time ya idea dikhana.\n• Pacing — video ki speed aur rhythm.\n• Kuleshov effect — shot ke order se viewer ka matlab badalna."]], "p2": [["⚡ Quick summary", "• Shot sizes: ECU (extreme close-up, sirf detail), CU (chehra), MCU (seene tak), MS (kamar tak), FS (poori body), WS (wide), EWS (bahut wide, location dikhata hai).\n• Close shot emotion dikhata hai, wide shot jagah aur scale.\n• Low angle subject ko powerful dikhata hai, high angle chhota ya kamzor.\n• Eye-level angle neutral lagta hai. Tilted (Dutch) angle tension deta hai.\n• Composition: rule of thirds, headroom aur lead room ka dhyan rakho."], ["📖 Mini glossary", "• Rule of thirds — frame ko 3x3 mein baant kar subject lines ya crossing points pe rakhna.\n• Headroom — subject ke sir ke upar ki khali jagah.\n• Lead room — subject jis taraf dekh raha hai us taraf ki khali jagah.\n• Establishing shot — scene shuru karne wala wide shot jo jagah dikhata hai.\n• OTS (over-the-shoulder) — ek vyakti ke kandhe ke peeche se doosre ka shot.\n• POV — shot jo kisi character ki nazar se dikhe."]], "p2b": [["⚡ Quick summary", "• Three-point lighting: Key (main aur sabse strong light), Fill (key ke shadows halke karti hai), Back/Rim (peeche se, subject ko background se alag karti hai).\n• Hard light mein shadows tez hote hain, soft light mein halke.\n• High-key = bright aur kam shadow. Low-key = dark aur zyada shadow, drama ya thriller feel.\n• Warm light aur cool light alag mood banate hain.\n• Editor ke liye: footage mein light mismatch ho to grading se clips ko match karo."], ["📖 Mini glossary", "• Key light — subject ki main light.\n• Fill light — shadows ko soften karne wali light.\n• Backlight / rim light — peeche se aane wali light jo outline banati hai.\n• High-key — bright, kam contrast wala look.\n• Low-key — dark, high contrast wala look.\n• Kelvin — light ke colour temperature ka unit (kam = warm, zyada = cool)."]], "p3": [["⚡ Quick summary", "• Pan = camera ek jagah se left-right ghoomta hai. Tilt = upar-neeche.\n• Dolly = camera physically aage-peeche. Track = subject ke saath side mein.\n• Zoom lens se hota hai, camera nahi hilta. Dolly mein perspective bhi badalta hai.\n• Handheld raw aur real feel deta hai, gimbal aur steadicam smooth.\n• Frame rate ka asar: 24fps cinematic feel, 30fps standard, 60fps smooth ya slow-mo ke liye."], ["📖 Mini glossary", "• Pan / Tilt — camera ko ghumana / upar-neeche karna.\n• Dolly — camera ko track pe aage-peeche chalana.\n• Tracking shot — subject ke saath chalta shot.\n• Dolly zoom (vertigo effect) — dolly aur zoom ulte direction mein, background khichta hua lagta hai.\n• Gimbal — haath ke jhatke ko smooth karne wala stabilizer.\n• Crane / jib — camera ko upar-neeche uthane wala arm."]], "p4": [["⚡ Quick summary", "• Hard cut sabse basic hai. Jump cut ek hi shot mein time skip karta hai.\n• J-cut: agle clip ki audio pehle shuru hoti hai. L-cut: video badalta hai lekin pichhle clip ki audio chalti rehti hai.\n• Match cut do similar shapes ya actions ko jodta hai.\n• Cutaway main shot se hat kar related shot dikhata hai. Cross-cut do jagah ka action saath chalata hai.\n• Dissolve aur fade time ka guzarna dikhate hain. Achhi editing viewer ko dikhti nahi."], ["📖 Mini glossary", "• Hard cut — seedha ek shot se doosra.\n• Jump cut — same shot mein beech ka hissa hata dena.\n• J-cut / L-cut — audio aur video ke cut alag-alag time pe.\n• Match cut — do shots ko shape ya movement se jodna.\n• Cutaway — main scene se hat kar ek related shot.\n• Cross-dissolve — ek shot dheere se doosre mein ghul jata hai.\n• Smash cut — achanak bahut alag scene pe cut."]], "p5": [["⚡ Quick summary", "• Audio video ka bahut bada hissa hai. Kharab audio achhe visuals ko bhi kharab kar deta hai.\n• Voice clear aur sabse upar rakho, music uske peeche.\n• Noise reduction se hiss hatao, EQ se awaaz saaf karo, compression se volume ko barabar karo.\n• Ducking: voice aate hi music apne-aap dheemi ho jaye.\n• SFX aur ambience se scene real lagta hai. Cuts ko beat pe lagana sabse powerful mobile technique hai."], ["📖 Mini glossary", "• EQ — awaaz ke frequencies ko kam ya zyada karna.\n• Compression — tez aur dheemi awaaz ke beech ka farq kam karna.\n• Noise reduction — background hiss ya awaaz hatana.\n• Ducking — voice ke time pe music automatically dheemi.\n• Foley — shoot ke baad alag se banaye gaye sound effects.\n• Room tone — kamre ki apni halki si awaaz, gaps bharne ke kaam aati hai.\n• Beat sync — cuts ko music ke beat pe rakhna."]], "p6": [["⚡ Quick summary", "• Color wheel samjho: complementary colours (aamne-saamne) strong contrast dete hain, analogous colours (paas-paas) calm look.\n• Hue = rang, saturation = rang kitna gehra, luminance = kitna bright.\n• Warm colours (laal, narangi) energy aur garmi dete hain, cool colours (neela) calm ya udaas mood.\n• Orange aur teal ka combo skin tones ko background se alag karta hai.\n• Grading se pehle theory, warna LUT lagana andhere mein teer chalana hai."], ["📖 Mini glossary", "• Hue — rang ka naam (laal, neela, hara).\n• Saturation — rang kitna gehra ya halka hai.\n• Luminance / value — rang kitna bright ya dark hai.\n• Complementary colours — wheel pe ek doosre ke saamne wale rang.\n• Analogous colours — wheel pe paas-paas wale rang.\n• Colour palette — ek video mein use hone wale rangon ka set."]], "p7": [["⚡ Quick summary", "• Pehle correction (problem theek karna), phir grading (creative look dena).\n• Order yaad rakho: exposure, white balance, contrast, colour, phir final look.\n• Warm/cool slider se temperature theek hota hai: cool = neela, warm = narangi.\n• LUT (.cube file) ek ready-made look hai, use halka lagao aur clip ke hisaab se adjust karo.\n• Sab clips ko match karo taaki poora video ek hi jagah ka lage."], ["📖 Mini glossary", "• Colour correction — exposure aur colour ki galtiyan theek karna.\n• Colour grading — video ko ek creative look dena.\n• White balance — safed cheez ko sach mein safed dikhane ka setting.\n• Exposure — image kitni bright ya dark hai.\n• Contrast — bright aur dark hisson ka farq.\n• LUT — ek preset jo poora colour look ek click mein lagata hai.\n• Curves — brightness aur colour ko line kheench kar control karna.\n• HSL — hue, saturation, luminance ko alag-alag control karna."]], "p8": [["⚡ Quick summary", "• Alight Motion tool hai, lekin pehle animation ke principles samjho.\n• Squash & stretch cheez ko wazan aur lachak deta hai.\n• Anticipation: main action se pehle ek chhoti ulti harkat (punch se pehle haath peeche).\n• Easing (slow in / slow out): shuru aur ant mein dheema, beech mein tez. Isse motion natural lagta hai.\n• Follow-through aur overlapping action: cheezein ek saath nahi ruktin.\n• Timing aur spacing mood decide karte hain. Arcs se motion natural lagta hai."], ["📖 Mini glossary", "• Keyframe — time pe ek point jahan tum value set karte ho (position, size, etc.).\n• Easing — keyframes ke beech speed ka badalna.\n• Anticipation — main action se pehle ki chhoti harkat.\n• Squash & stretch — cheez ka dabna aur failna.\n• Follow-through — action ke baad hisson ka thoda aur chalte rehna.\n• Timing — action kitne frames ya time mein hota hai.\n• Arc — motion ka curved raasta."]], "p9": [["⚡ Quick summary", "• Story ka basic dhancha: Setup (duniya aur character), Confrontation (problem aur takraav), Resolution (anjaam).\n• Short videos mein bhi ye hota hai, bas bahut chhota.\n• Hook pehle 1-3 seconds mein hona chahiye.\n• Curiosity gap: kuch aisa batao jo viewer ko jaanne pe majboor kare, par poora jawab baad mein do.\n• Open loop (sawal) aur payoff (jawab) dono video mein hone chahiye."], ["📖 Mini glossary", "• Three-act structure — setup, confrontation, resolution.\n• Hook — shuru ka wo hissa jo viewer ko rokta hai.\n• Curiosity gap — viewer ko pata hai ki kuch baaki hai aur wo jaanna chahta hai.\n• Inciting incident — wo ghatna jo kahani ko shuru karti hai.\n• Climax — kahani ka sabse tez ya bada moment.\n• Open loop — adhoora sawal ya wada.\n• Payoff — us sawal ka jawab ya inaam."]], "p11": [["⚡ Quick summary", "• Har style ka apna rhythm hai: vlog (jump cuts, B-roll, music), cinematic (dheema, graded), reels aur shorts (fast hook, captions), music edit (beat sync).\n• Vlog aur talking-head mein pacing aur filler words hatana sabse zaroori hai.\n• Short-form mein pehle 1-2 seconds ka hook aur beat-synced cuts kaam aate hain.\n• Ek video ka style uske audience aur platform ke hisaab se chuno.\n• Practice ke liye har style ka ek chhota project banao."], ["📖 Mini glossary", "• A-roll — main footage (jaise bolta hua insaan).\n• B-roll — upar se lagne wala extra footage jo baat ko support kare.\n• Jump cut — beech ka hissa kaat kar clip chhota karna.\n• Speed ramp — speed ko beech mein tez ya dheema karna.\n• Beat sync — cuts ya effects ko music ke beat pe lagana.\n• Captions — screen pe bolne wale shabd, short-form mein bahut zaroori."]], "p12": [["⚡ Quick summary", "• Retention ka matlab hai viewer kitni der tak dekhta hai. Isi pe algorithm kaam karta hai.\n• Hook pehle 1-2 seconds mein. Phir har 5-7 second mein pattern interrupt (zoom, cut, sound, text) taaki dhyan na bhatke.\n• Open loop shuru mein, payoff ant mein.\n• Dead air aur filler hatao, pacing tight rakho.\n• Personal style: 2-3 cheezein (font, grade, sound) chun kar har video mein dohrao."], ["📖 Mini glossary", "• Retention — viewer ne video ka kitna hissa dekha.\n• Watch time — total dekhne ka time.\n• Pattern interrupt — achanak koi badlaav jo dhyan wapas khinch le.\n• Open loop — adhoora wada jo viewer ko rokta hai.\n• Payoff — us wade ka inaam ya jawab.\n• Signature style — wo cheezein jo tumhari editing ko pehchaan deti hain."]]};
+
   phases.forEach(function(phase){
     var section = phase.closest('section');
     if (!section || !section.id) return;
@@ -3426,12 +3436,55 @@ html[data-lang="en"] .hi-text{display:none}
     });
 
     if (textarea.value) { details.open = false; summary.innerHTML = '📝 <span class="hi-text">Mere Notes (saved)</span><span class="en-text">My Notes (saved)</span>'; }
-    wrap.appendChild(textarea);
-    wrap.appendChild(status);
-    wrap.appendChild(toolbar);
-    wrap.appendChild(translatePanel);
-    wrap.appendChild(suggestions);
-    wrap.appendChild(privacyHint);
+    var manual = notesMk('div', 'notes-manual');
+    [textarea, status, toolbar, translatePanel, suggestions, privacyHint].forEach(function(n){ manual.appendChild(n); });
+    var premade = PREMADE_NOTES[key];
+    if (premade) {
+      var tabs = notesMk('div', 'notes-tabs');
+      tabs.setAttribute('role', 'tablist');
+      var tabMine = notesMk('button', 'notes-tab', '<span class="hi-text">Meri notes</span><span class="en-text">My notes</span>');
+      var tabPre = notesMk('button', 'notes-tab', '<span class="hi-text">Premade notes</span><span class="en-text">Premade notes</span>');
+      tabMine.type = 'button'; tabPre.type = 'button';
+      tabMine.setAttribute('role', 'tab'); tabPre.setAttribute('role', 'tab');
+      var panel = notesMk('div', 'notes-premade');
+      panel.hidden = true;
+      panel.appendChild(notesMk('div', 'notes-premade-note', '<span class="hi-text">Ye notes humne likhe hain (sirf padhne ke liye). “Meri notes mein copy karo” dabao aur apne hisaab se edit karo.</span><span class="en-text">We wrote these notes (read-only). Press “Copy to my notes” and edit them your way.</span>'));
+      function showTab(which){
+        var pre = which === 'pre';
+        manual.hidden = pre;
+        panel.hidden = !pre;
+        tabMine.setAttribute('aria-selected', String(!pre));
+        tabPre.setAttribute('aria-selected', String(pre));
+      }
+      premade.forEach(function(item){
+        var card = notesMk('div', 'premade-card');
+        var t = notesMk('div', 'premade-title'); t.textContent = item[0];
+        var x = notesMk('div', 'premade-text'); x.textContent = item[1];
+        var b = notesMk('button', 'premade-copy', '<span class="hi-text">Meri notes mein copy karo</span><span class="en-text">Copy to my notes</span>');
+        b.type = 'button';
+        b.addEventListener('click', function(){
+          var add = item[0] + '\n' + item[1];
+          var cur = textarea.value.replace(/\s+$/, '');
+          textarea.value = cur ? (cur + '\n\n' + add) : add;
+          clearTimeout(saveTimer);
+          persist();
+          showTab('mine');
+          setStatus('Copy ho gaya ✓ — ab apne hisaab se edit karo', 'Copied ✓ — now edit it your way', 'done');
+          try { textarea.focus(); } catch(e){}
+        });
+        card.appendChild(t); card.appendChild(x); card.appendChild(b);
+        panel.appendChild(card);
+      });
+      tabMine.addEventListener('click', function(){ showTab('mine'); });
+      tabPre.addEventListener('click', function(){ showTab('pre'); });
+      showTab('mine');
+      tabs.appendChild(tabMine); tabs.appendChild(tabPre);
+      wrap.appendChild(tabs);
+      wrap.appendChild(manual);
+      wrap.appendChild(panel);
+    } else {
+      wrap.appendChild(manual);
+    }
     details.appendChild(summary);
     details.appendChild(wrap);
     body.appendChild(details);
