@@ -2940,16 +2940,19 @@ html[data-lang="en"] .hi-text{display:none}
   // Best-effort translation via Google's free public translate endpoint (no API key).
   // This is an unofficial endpoint many open-source tools use - no guarantees, and like
   // LanguageTool it needs a real https:// origin (won't work opened as a local file).
-  function translateText(text, targetLang, sourceLang){
+  function translateText(text, targetLang, sourceLang, opts){
+    var rm = !!(opts && opts.romanize);
     var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=' +
-      (sourceLang || 'auto') + '&tl=' + targetLang + '&dt=t&q=' + encodeURIComponent(text);
+      (sourceLang || 'auto') + '&tl=' + targetLang + '&dt=t' + (rm ? '&dt=rm' : '') + '&q=' + encodeURIComponent(text);
     return fetch(url).then(function(r){
       if (!r.ok) throw new Error('Translate response not OK');
       return r.json();
     }).then(function(data){
-      var translated = (data[0] || []).map(function(chunk){ return chunk[0] || ''; }).join('');
+      var chunks = data[0] || [];
+      var translated = chunks.map(function(chunk){ return chunk[0] || ''; }).join('');
+      var romanized = rm ? chunks.filter(function(ch){ return ch && ch[0] == null && ch[2]; }).map(function(ch){ return ch[2]; }).join('') : null;
       var detectedSource = data[2] || null;
-      return { translated: translated, detectedSource: detectedSource };
+      return { translated: translated, romanized: romanized, detectedSource: detectedSource };
     });
   }
 
@@ -3005,6 +3008,110 @@ html[data-lang="en"] .hi-text{display:none}
       if (!r) return false;
       return r.issueType === 'misspelling' || !!(r.category && r.category.id === 'TYPOS');
     }
+    var HINGLISH_MARKERS = ' hai hain tha thi hoga hogi kiya kiye karna karo karta karte karke karne ka ke ki ko mein aur yeh woh nahi nahin kya kyun kyu kyunki kaise phir pehle baad bhi toh bahut bohot maine mujhe mera meri mere humne tum aap uska uski uske iske apna apni seekha seekhi sikha sikhi dekha dekhe dekhi aaj kal lekin isliye abhi sirf wala wali wale liye saath jaise kuch matlab samajh hota hoti hote raha rahi rahe gaya gayi gaye milta milti chahiye sakta sakte wahan yahan ';
+    var KEEP_LATIN = ' try tried trying timeline timelines subtitle subtitles outro keyframe keyframes app apps scene scenes blur glitch saturation lut luts tutorial tutorials ';
+    function looksRomanHinglish(text){
+      var words = (text.toLowerCase().match(/[a-z']+/g) || []);
+      if (words.length < 3) return false;
+      var marks = 0;
+      words.forEach(function(w){ if (HINGLISH_MARKERS.indexOf(' ' + w + ' ') !== -1) marks++; });
+      return marks >= 2 && marks / words.length >= 0.15;
+    }
+    function notesSeq(items, fn){
+      var out = [];
+      return items.reduce(function(p, item, i){
+        return p.then(function(){ return fn(item, i); }).then(function(r){ out.push(r); });
+      }, Promise.resolve()).then(function(){ return out; });
+    }
+    function notesSplit(text, max){
+      var parts = [], cur = '';
+      text.split('\n').forEach(function(line){
+        if (cur && (cur.length + 1 + line.length) > max) { parts.push(cur); cur = line; }
+        else cur = cur ? (cur + '\n' + line) : line;
+      });
+      if (cur) parts.push(cur);
+      return parts;
+    }
+    function notesTranslateChunks(text, targetLang, sourceLang, opts){
+      return notesSeq(notesSplit(text, 1200), function(part){
+        return translateText(part, targetLang, sourceLang, opts);
+      }).then(function(rs){
+        return {
+          translated: rs.map(function(r){ return r.translated; }).join('\n'),
+          romanized: rs.map(function(r){ return r.romanized || ''; }).join('\n'),
+          detectedSource: rs[0] ? rs[0].detectedSource : null
+        };
+      });
+    }
+    function transliterateRun(str){
+      var url = 'https://inputtools.google.com/request?text=' + encodeURIComponent(str) +
+        '&itc=hi-t-i0-und&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8&app=roadmap';
+      return fetch(url).then(function(r){
+        if (!r.ok) throw new Error('Transliterate response not OK');
+        return r.json();
+      }).then(function(d){
+        var best = d && d[0] === 'SUCCESS' && d[1] && d[1][0] && d[1][0][1] && d[1][0][1][0];
+        return best || str;
+      });
+    }
+    function transliterateLine(line){
+      var m = line.match(/^(\s*(?:[\u2022*-]\s+)?)(.*)$/);
+      var prefix = m[1], rest = m[2];
+      var runs = [];
+      rest.split(' ').forEach(function(tok){
+        var core = tok.toLowerCase().replace(/[.,!?;:]+$/, '');
+        var plain = /^[A-Za-z][A-Za-z'\u2019]*[.,!?;:]*$/.test(tok) && KEEP_LATIN.indexOf(' ' + core + ' ') === -1;
+        var last = runs[runs.length - 1];
+        if (plain && last && last.plain && (last.text.length + 1 + tok.length) <= 150) last.text += ' ' + tok;
+        else runs.push({ plain: plain, text: tok });
+      });
+      return Promise.all(runs.map(function(run){
+        return run.plain ? transliterateRun(run.text) : Promise.resolve(run.text);
+      })).then(function(parts){ return prefix + parts.join(' '); });
+    }
+    function transliterateToDevanagari(text){
+      return notesSeq(text.split('\n'), function(line){
+        return line.trim() ? transliterateLine(line) : Promise.resolve(line);
+      }).then(function(lines){ return lines.join('\n'); });
+    }
+    var HINGLISH_GLOSSARY = [
+      [/\bsampadan\b/gi, 'editing'],
+      [/\bsampadit\b/gi, 'edited'],
+      [/\bniryat\b/gi, 'export']
+    ];
+    function polishHinglish(s){
+      HINGLISH_GLOSSARY.forEach(function(p){ s = s.replace(p[0], p[1]); });
+      return s;
+    }
+    function grammarFixEnglish(en){
+      return fetch('https://api.languagetool.org/v2/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'text=' + encodeURIComponent(en) + '&language=en-US'
+      }).then(function(r){
+        if (!r.ok) throw new Error('Grammar check response not OK');
+        return r.json();
+      }).then(function(json){
+        var matches = (json && json.matches) || [];
+        var corrected = en;
+        var usable = matches.filter(function(m){
+          return m.replacements && m.replacements[0] && m.replacements[0].value != null &&
+                 typeof m.offset === 'number' && typeof m.length === 'number' && !isSpellingMatch(m);
+        });
+        usable.sort(function(a, b){ return b.offset - a.offset; });
+        usable.forEach(function(m){
+          corrected = corrected.slice(0, m.offset) + m.replacements[0].value + corrected.slice(m.offset + m.length);
+        });
+        return { text: organizeText(corrected), checked: true };
+      }).catch(function(){
+        return { text: organizeText(en), checked: false };
+      });
+    }
+    function previewWarn(html){
+      var w = notesMk('div', 'notes-preview-caption', html);
+      w.style.color = 'var(--amber)';
+      translatePreview.insertBefore(w, translatePreview.children[1] || null);
+    }
 
     var toolbar = notesMk('div', 'notes-actions');
 
@@ -3055,12 +3162,12 @@ html[data-lang="en"] .hi-text{display:none}
       translateRow));
     toolbar.appendChild(notesCard(
       '🌐🪄 <span class="hi-text">Translate + Organize</span><span class="en-text">Translate + Organize</span>',
-      '<span class="hi-text">Hinglish/Hindi notes ke liye: grammar theek karke bullets lagata hai, phir note wapas tumhari hi language mein deta hai.</span><span class="en-text">For Hinglish/Hindi notes: fixes grammar and adds bullets, then gives the note back in your own language.</span>',
+      '<span class="hi-text">Hinglish/Hindi notes ke liye: grammar theek karke bullets lagata hai, phir wapas usi language aur script mein deta hai (Hinglish Hinglish hi rehta hai). Note ko Google ke shabdon mein dobara likhta hai, isliye pehle preview dekho.</span><span class="en-text">For Hinglish/Hindi notes: fixes grammar and adds bullets, then returns it in the same language and script (Hinglish stays Hinglish). It rewrites the note in Google’s wording, so check the preview first.</span>',
       comboRow));
 
     var privacyHint = document.createElement('div');
     privacyHint.className = 'notes-privacy-hint';
-    privacyHint.innerHTML = '<span class="hi-text">🔒 Saaf-safai tumhare device pe hoti hai. Grammar check text LanguageTool ko aur translate Google Translate ko bhejta hai (dono online).</span><span class="en-text">🔒 Tidying happens on your device. Grammar check sends your text to LanguageTool and translating sends it to Google Translate (both online).</span>';
+    privacyHint.innerHTML = '<span class="hi-text">🔒 Saaf-safai tumhare device pe hoti hai. Grammar check text LanguageTool ko jaata hai; translate aur Hinglish conversion Google (Translate / Input Tools) ko jaata hai. Sab online hai.</span><span class="en-text">🔒 Tidying happens on your device. Grammar check sends your text to LanguageTool; translating and Hinglish conversion send it to Google (Translate / Input Tools). All of it is online.</span>';
 
     // Holds only the preview now (the three action cards above replaced the old shared panel)
     var translatePanel = document.createElement('div');
@@ -3138,40 +3245,53 @@ html[data-lang="en"] .hi-text{display:none}
       translateGrammarBtn.disabled = true;
       suggestions.hidden = true;
       suggestions.innerHTML = '';
-      setStatus('Translate ho raha hai…', 'Translating…', 'translating');
-      var sourceLang = null;
-      translateText(text, 'en').then(function(toEnglish){
-        sourceLang = toEnglish.detectedSource || 'en';
-        setStatus('Grammar check ho raha hai…', 'Checking grammar…', 'checking');
-        var body = 'text=' + encodeURIComponent(toEnglish.translated) + '&language=en-US';
-        return fetch('https://api.languagetool.org/v2/check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: body
-        }).then(function(r){ return r.json(); }).then(function(json){
-          var matches = (json && json.matches) || [];
-          var corrected = toEnglish.translated;
-          var usable = matches.filter(function(m){
-            return m.replacements && m.replacements[0] && m.replacements[0].value != null &&
-                   typeof m.offset === 'number' && typeof m.length === 'number' && !isSpellingMatch(m);
-          });
-          usable.sort(function(a, b){ return b.offset - a.offset; });
-          usable.forEach(function(m){
-            corrected = corrected.slice(0, m.offset) + m.replacements[0].value + corrected.slice(m.offset + m.length);
-          });
-          corrected = organizeText(corrected);
-          if (sourceLang === 'en') {
-            setStatus('Grammar check ho gaya ✓', 'Grammar check done ✓', 'done');
-            showTranslatePreview(corrected, function(){ textarea.value = corrected; persist(); });
-          } else {
-            setStatus('Wapas translate ho raha hai…', 'Translating back…', 'translating-back');
-            return translateText(corrected, sourceLang, 'en').then(function(backRes){
-              setStatus('Grammar check ho gaya ✓', 'Grammar check done ✓', 'done');
-              showTranslatePreview(backRes.translated, function(){ textarea.value = backRes.translated; persist(); });
-            });
-          }
+
+      var hasDevanagari = (text.match(/[\u0900-\u097F]/g) || []).length >= 3;
+      var romanHinglish = !hasDevanagari && looksRomanHinglish(text);
+      var grammarRan = true;
+      var flow;
+
+      function finishPreview(out, rewritten){
+        if (grammarRan) setStatus('Grammar check ho gaya ✓', 'Grammar check done ✓', 'done');
+        else setStatus('Grammar check available nahi tha — sirf organize kiya', 'Grammar check was unavailable — only organized', 'done');
+        showTranslatePreview(out, function(){ textarea.value = out; persist(); });
+        if (rewritten) previewWarn('<span class="hi-text">⚠️ Yeh note ko Google ke shabdon mein dobara likhta hai — original se compare karke hi “Note replace karo” dabao.</span><span class="en-text">⚠️ This rewrites your note in Google’s wording — compare it with the original before pressing “Replace note”.</span>');
+      }
+
+      if (romanHinglish) {
+        setStatus('Hinglish ko Devanagari mein badal raha hai…', 'Converting Hinglish to Devanagari…', 'translating');
+        flow = transliterateToDevanagari(text).then(function(deva){
+          setStatus('English mein translate ho raha hai…', 'Translating to English…', 'translating');
+          return notesTranslateChunks(deva, 'en', 'hi');
+        }).then(function(toEn){
+          setStatus('Grammar check ho raha hai…', 'Checking grammar…', 'checking');
+          return grammarFixEnglish(toEn.translated);
+        }).then(function(fixed){
+          grammarRan = fixed.checked;
+          setStatus('Wapas Hinglish mein aa raha hai…', 'Converting back to Hinglish…', 'translating-back');
+          return notesTranslateChunks(fixed.text, 'hi', 'en', { romanize: true });
+        }).then(function(back){
+          finishPreview(organizeText(polishHinglish(back.romanized || back.translated)), true);
         });
-      }).catch(function(){
+      } else {
+        setStatus('Translate ho raha hai…', 'Translating…', 'translating');
+        var sourceLang = 'en';
+        flow = notesTranslateChunks(text, 'en', hasDevanagari ? 'hi' : undefined).then(function(toEn){
+          sourceLang = hasDevanagari ? 'hi' : (toEn.detectedSource || 'en');
+          if (/^hi-latn$/i.test(sourceLang)) sourceLang = 'hi';
+          setStatus('Grammar check ho raha hai…', 'Checking grammar…', 'checking');
+          return grammarFixEnglish(toEn.translated);
+        }).then(function(fixed){
+          grammarRan = fixed.checked;
+          if (sourceLang === 'en') { finishPreview(fixed.text, false); return; }
+          setStatus('Wapas translate ho raha hai…', 'Translating back…', 'translating-back');
+          return notesTranslateChunks(fixed.text, sourceLang, 'en').then(function(back){
+            finishPreview(back.translated, hasDevanagari);
+          });
+        });
+      }
+
+      flow.catch(function(){
         setStatus('Yeh feature abhi available nahi hai (internet chahiye)', 'This needs internet - unavailable right now', 'unavailable');
       }).finally(function(){
         translateOnlyBtn.disabled = false;
